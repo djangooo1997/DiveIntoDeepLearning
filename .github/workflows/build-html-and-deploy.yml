@@ -9,6 +9,9 @@ on:
 jobs:
   build-html-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v3
@@ -21,18 +24,21 @@ jobs:
           auto-update-conda: true
           auto-activate-base: false
           miniconda-version: 'latest'
-          python-version: 3.8
+          python-version: 3.11
           environment-file: environment.yml
           activate-environment: qe-mini-example
 
       - name: Build QuantEcon Mini Example
         shell: bash -l {0}
         run: jb build mini_book/
+      
+      # Upload the book's HTML as an artifact
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: "mini_book/_build/html"
 
       - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@3.7.1
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages
-          FOLDER: mini_book/_build/html
-          CLEAN: true
+        uses: actions/deploy-pages@v2
+        id: deployment
+        
